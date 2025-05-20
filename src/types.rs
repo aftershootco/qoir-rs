@@ -2,15 +2,23 @@ use std::sync::Arc;
 
 use crate::bindings::{qoir_decode_result, qoir_encode_result, qoir_pixel_format, qoir_rectangle};
 
+/// Represents errors that can occur during QOIR encoding or decoding.
 #[derive(Debug, Clone)]
 pub enum Error {
+    /// An invalid parameter was provided to a function.
     InvalidParameter,
+    /// Decoding of QOIR data failed. Contains a message from the C library.
     DecodingFailed(String),
+    /// Encoding to QOIR data failed. Contains a message from the C library.
     EncodingFailed(String),
+    /// The specified file could not be found.
     FileNotFound,
+    /// An I/O error occurred during file reading or writing.
     IoError,
 }
 
+/// A rectangle, defined by its top-left (x0, y0) and bottom-right (x1, y1) coordinates.
+/// The low bounds are inclusive, high bounds are exclusive.
 pub type Rectangle = qoir_rectangle;
 
 // This is the memory allocated for all the fields in this struct
@@ -61,19 +69,29 @@ impl Drop for EncodedResult {
     }
 }
 
+/// Represents the different pixel formats supported by QOIR.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum PixelFormat {
+    /// Invalid pixel format.
     Invalid = 0x00,
+    /// 4 bytes per pixel: B, G, R, then X (ignored).
     BGRX = 0x01,
+    /// 4 bytes per pixel: B, G, R, then A (alpha). Non-premultiplied alpha.
     BGRANonPremul = 0x02,
+    /// 4 bytes per pixel: B, G, R, then A (alpha). Premultiplied alpha.
     BGRAPremul = 0x03,
+    /// 3 bytes per pixel: B, G, R.
     BGR = 0x11,
+    /// 4 bytes per pixel: R, G, B, then X (ignored).
     RGBX = 0x21,
+    /// 4 bytes per pixel: R, G, B, then A (alpha). Non-premultiplied alpha.
     RGBANonPremul = 0x22,
+    /// 4 bytes per pixel: R, G, B, then A (alpha). Premultiplied alpha.
     RGBAPremul = 0x23,
+    /// 3 bytes per pixel: R, G, B.
     RGB = 0x31,
-    // MaskForAlphaTransperency = 0x03,
-    // MaskForColorModel = 0x0C,
+    // MaskForAlphaTransperency = 0x03, // Internal C library detail
+    // MaskForColorModel = 0x0C,        // Internal C library detail
 }
 
 #[allow(non_snake_case, unused_variables)]
@@ -94,37 +112,39 @@ impl From<qoir_pixel_format> for PixelFormat {
     }
 }
 
+/// Represents an uncompressed image in memory.
+///
+/// The `pixels` field is a slice referencing the raw pixel data.
+/// The lifetime parameter `'data` ensures that this struct does not outlive the
+/// data it points to.
 #[derive(Debug, Clone)]
 pub struct Image<'data> {
-    // This is the decoded pixels data.
-    // This could also be translated as a enum
-    // with a variant for each pixel format.
-    // But this way its more convinient to use
-    // in a lot of cases.
+    /// Raw pixel data.
     pub pixels: &'data [u8],
-
-    // The width and height of the decoded image.
+    /// Width of the image in pixels.
     pub width: u32,
-    // The width and height of the decoded image.
+    /// Height of the image in pixels.
     pub height: u32,
-
-    // The pixel format of the decoded image.
+    /// Pixel format of the image data.
     pub pixel_format: PixelFormat,
-
+    /// Stride (or row size) in bytes for the pixel data.
     pub stride_in_bytes: usize,
 }
 
+/// Options for controlling the QOIR decoding process.
 pub struct DecodeOptions {
-    // If non-zero, this is the pixel format to use when dynamically allocating
-    // the pixel buffer to decode into.
+    /// If non-zero, this is the pixel format to use when dynamically allocating
+    /// the pixel buffer to decode into. Defaults to `PixelFormat::RGBANonPremul`.
     pub pixel_format: PixelFormat,
-    // Clipping rectangles, in the destination or source (or both) coordinate
-    // spaces.
+    /// Optional clipping rectangle in the source coordinate space.
     pub src_clip_rect: Option<Rectangle>,
+    /// Optional clipping rectangle in the destination coordinate space.
     pub dst_clip_rect: Option<Rectangle>,
-    // The position (in destination coordinate space) to place the top-left
-    // corner of the decoded source image. The Y axis grows down.
+    /// The X offset (in destination coordinate space) to place the top-left
+    /// corner of the decoded source image. The Y axis grows down.
     pub offset_x: i32,
+    /// The Y offset (in destination coordinate space) to place the top-left
+    /// corner of the decoded source image. The Y axis grows down.
     pub offset_y: i32,
 }
 
@@ -140,6 +160,11 @@ impl Default for DecodeOptions {
     }
 }
 
+/// Represents a decoded QOIR image.
+///
+/// This struct holds the decoded image data (`image`) and any embedded metadata.
+/// The lifetime parameter `'a` is tied to the lifetime of the underlying buffer
+/// from which the image was decoded.
 #[derive(Clone)]
 pub struct DecodedImage<'a> {
     // This is the memory allocated for all the fields in this struct
@@ -147,37 +172,45 @@ pub struct DecodedImage<'a> {
     #[allow(dead_code)]
     pub(crate) result: Arc<DecodedResult>,
 
-    // The image data
+    /// The decoded image data (pixels, dimensions, format).
     pub image: Image<'a>,
 
-    // The embedded metadata (optional)
+    /// Optional embedded CICP (Coding-Independent Code Points) profile data.
     pub cic_profile: Option<&'a [u8]>,
+    /// Optional embedded ICC (International Color Consortium) profile data.
     pub icc_profile: Option<&'a [u8]>,
+    /// Optional embedded EXIF (Exchangeable image file format) data.
     pub exif: Option<&'a [u8]>,
+    /// Optional embedded XMP (Extensible Metadata Platform) data.
     pub xmp: Option<&'a [u8]>,
 }
 
+/// Options for controlling the QOIR encoding process.
 #[derive(Debug, Clone, Default)]
 pub struct EncodeOptions {
-    // Optional metadata chunks.
+    /// Optional CICP (Coding-Independent Code Points) profile data to embed.
     pub cicp_profile: Option<Vec<u8>>,
+    /// Optional ICC (International Color Consortium) profile data to embed.
     pub icc_profile: Option<Vec<u8>>,
+    /// Optional EXIF (Exchangeable image file format) data to embed.
     pub exif: Option<Vec<u8>>,
+    /// Optional XMP (Extensible Metadata Platform) data to embed.
     pub xmp: Option<Vec<u8>>,
 
-    // Lossiness ranges from 0 (lossless) to 7 (very lossy), inclusive.
+    /// Lossiness level for encoding. Ranges from 0 (lossless) to 7 (very lossy).
+    /// Defaults to 0 (lossless).
     pub lossiness: u8,
 
-    // Whether to dither the lossy encoding. This option has no effect if
-    // lossiness is zero.
-    //
-    // The dithering algorithm is relatively simple. Fancier algorithms like
-    // https://nigeltao.github.io/blog/2022/gamma-aware-ordered-dithering.html
-    // can produce higher quality results, especially for lossiness levels at 6
-    // or 7 re overall brightness, but they are out of scope of this library.
+    /// Whether to dither the lossy encoding. This option has no effect if `lossiness` is zero.
+    /// Defaults to `false`.
     pub dither: bool,
 }
 
+/// Represents an encoded QOIR image buffer.
+///
+/// The `data` field is a slice referencing the raw encoded QOIR byte data.
+/// The lifetime parameter `'a` ensures that this struct does not outlive the
+/// data it points to (which is managed by the `result` field).
 #[derive(Clone)]
 pub struct EncodedBuffer<'a> {
     // This is the memory allocated for all the fields in this struct
@@ -185,6 +218,6 @@ pub struct EncodedBuffer<'a> {
     #[allow(dead_code)]
     pub(crate) result: Arc<EncodedResult>,
 
-    // The encoded image data
+    /// The raw QOIR encoded byte data.
     pub data: &'a [u8],
 }

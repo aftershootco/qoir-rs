@@ -6,6 +6,33 @@ use crate::{
 };
 use std::{io::Read, path::Path, sync::Arc};
 
+/// Decodes QOIR image data from a byte slice.
+///
+/// # Arguments
+///
+/// * `data`: A slice of bytes containing the QOIR encoded image data.
+/// * `options`: `DecodeOptions` to control the decoding process.
+///
+/// # Returns
+///
+/// A `Result` containing the `DecodedImage` or an `Error` if decoding fails.
+///
+/// # Examples
+///
+/// ```no_run
+/// use qoir_rs::{decode_from_memory, DecodeOptions};
+///
+/// let qoir_data: &[u8] = &[/* ... QOIR data ... */];
+/// let options = DecodeOptions::default();
+/// match decode_from_memory(qoir_data, options) {
+///     Ok(decoded_image) => {
+///         println!("Image decoded: {}x{}", decoded_image.image.width, decoded_image.image.height);
+///     }
+///     Err(e) => {
+///         eprintln!("Decoding failed: {:?}", e);
+///     }
+/// }
+/// ```
 pub fn decode_from_memory<'a>(
     data: &'_ [u8],
     options: DecodeOptions,
@@ -38,6 +65,31 @@ pub fn decode_from_memory<'a>(
     Ok(DecodedImage::new(decoded))
 }
 
+/// Decodes a QOIR image from a file path.
+///
+/// # Arguments
+///
+/// * `path`: A path to the QOIR image file.
+/// * `options`: `DecodeOptions` to control the decoding process.
+///
+/// # Returns
+///
+/// A `Result` containing the `DecodedImage` or an `Error` if the file cannot be read or decoding fails.
+///
+/// # Examples
+///
+/// ```no_run
+/// use qoir_rs::{decode, DecodeOptions};
+///
+/// match decode("input.qoir", DecodeOptions::default()) {
+///     Ok(decoded_image) => {
+///         println!("Image decoded: {}x{}", decoded_image.image.width, decoded_image.image.height);
+///     }
+///     Err(e) => {
+///         eprintln!("Decoding failed: {:?}", e);
+///     }
+/// }
+/// ```
 pub fn decode<'a>(
     path: impl AsRef<Path>,
     options: DecodeOptions,
@@ -50,6 +102,34 @@ pub fn decode<'a>(
     decode_from_memory(&data, options)
 }
 
+/// Decodes a QOIR image from a reader.
+///
+/// # Arguments
+///
+/// * `reader`: An object implementing `std::io::Read` from which QOIR data will be read.
+/// * `options`: `DecodeOptions` to control the decoding process.
+///
+/// # Returns
+///
+/// A `Result` containing the `DecodedImage` or an `Error` if reading or decoding fails.
+///
+/// # Examples
+///
+/// ```no_run
+/// use qoir_rs::{decode_from_reader, DecodeOptions};
+/// use std::fs::File;
+///
+/// let file = File::open("input.qoir").expect("Failed to open file");
+/// let options = DecodeOptions::default();
+/// match decode_from_reader(file, options) {
+///     Ok(decoded_image) => {
+///         println!("Image decoded: {}x{}", decoded_image.image.width, decoded_image.image.height);
+///     }
+///     Err(e) => {
+///         eprintln!("Decoding failed: {:?}", e);
+///     }
+/// }
+/// ```
 pub fn decode_from_reader<'a>(
     reader: impl Read,
     options: DecodeOptions,
@@ -60,6 +140,33 @@ pub fn decode_from_reader<'a>(
     decode_from_memory(&data, options)
 }
 
+/// Decodes basic metadata (width, height, pixel format) from QOIR image data.
+///
+/// This function is faster than full decoding if only metadata is needed.
+///
+/// # Arguments
+///
+/// * `data`: A slice of bytes containing the QOIR encoded image data.
+///
+/// # Returns
+///
+/// A `Result` containing a tuple `(width, height, PixelFormat)` or an `Error` if metadata decoding fails.
+///
+/// # Examples
+///
+/// ```no_run
+/// use qoir_rs::decode_basic_metadata;
+///
+/// let qoir_data: &[u8] = &[/* ... QOIR data ... */];
+/// match decode_basic_metadata(qoir_data) {
+///     Ok((width, height, pixel_format)) => {
+///         println!("Image metadata: {}x{}, Format: {:?}", width, height, pixel_format);
+///     }
+///     Err(e) => {
+///         eprintln!("Metadata decoding failed: {:?}", e);
+///     }
+/// }
+/// ```
 pub fn decode_basic_metadata(data: &[u8]) -> Result<(u32, u32, PixelFormat), Error> {
     let decoded = unsafe { qoir_decode_pixel_configuration(data.as_ptr(), data.len()) };
 
@@ -78,6 +185,9 @@ pub fn decode_basic_metadata(data: &[u8]) -> Result<(u32, u32, PixelFormat), Err
 }
 
 impl DecodedImage<'_> {
+    /// Creates a new `DecodedImage` from the raw `qoir_decode_result`.
+    ///
+    /// This is an internal function.
     pub(crate) fn new(data: qoir_decode_result) -> Self {
         let result = Arc::new(DecodedResult::new(data));
 
