@@ -3,7 +3,7 @@ name = "qoir-rs"
 edition = "2024"
 members = [
     "qoir-rs",
-    # "examples/basic_usage",
+    "examples/basic_usage",
 ]
 
 [workspace.dependencies]

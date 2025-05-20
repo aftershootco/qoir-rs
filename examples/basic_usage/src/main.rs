@@ -6,12 +6,12 @@ fn main() -> Result<(), Error> {
     println!("Decoding example image...");
     let decode_options = DecodeOptions::default();
     // Assuming at-mouquins.qoir is in the root of the qoir-rs project, not inside basic_usage
-    let input_path_str = "../../at-mouquins.qoir"; 
+    let input_path_str = "harvesters.qoir"; 
     let input_path = Path::new(input_path_str);
 
     if !input_path.exists() {
         eprintln!("Error: Input file not found at {}", input_path.display());
-        eprintln!("Please ensure 'at-mouquins.qoir' is in the root of the 'qoir-rs' project.");
+        eprintln!("Please ensure 'harvesters.qoir' is in the root of the 'qoir-rs' project.");
         return Err(Error::FileNotFound);
     }
 
@@ -64,11 +64,16 @@ fn main() -> Result<(), Error> {
         ..Default::default()
     };
 
+    
     // Output path will be relative to the execution directory of basic_usage,
     // which is examples/basic_usage/target/debug or release
     // For simplicity, let's try to put it in the qoir-rs root for now.
-    let output_path_str = "../../encoded_example.qoir";
+    let output_path_str = "./output/encoded_example.qoir";
     let output_path = Path::new(output_path_str);
+    if !output_path.parent().unwrap().exists() {
+        std::fs::create_dir_all(output_path.parent().unwrap()).expect("Failed to create output directory");
+    }
+
     println!("Encoding dummy image to '{}'...", output_path.display());
 
     match encode(image_to_encode, encode_options, output_path_str) {
