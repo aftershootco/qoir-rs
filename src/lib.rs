@@ -47,7 +47,7 @@
 //! ### Encoding an image to a file
 //!
 //! ```no_run
-//! use qoir_rs::{encode_to_file, EncodeOptions, Image, PixelFormat, Error};
+//! use qoir_rs::{encode, EncodeOptions, Image, PixelFormat, Error};
 //!
 //! fn main() -> Result<(), Error> {
 //!     // Example: Create a dummy 10x10 RGB image (all black)
@@ -68,7 +68,7 @@
 //!         ..Default::default()
 //!     };
 //!
-//!     encode_to_file(image, options, "output.qoir")?;
+//!     encode(image, options, "output.qoir")?;
 //!     println!("Image encoded and saved to output.qoir");
 //!
 //!     Ok(())

@@ -132,6 +132,7 @@ pub struct Image<'data> {
 }
 
 /// Options for controlling the QOIR decoding process.
+#[derive(Debug, Clone)]
 pub struct DecodeOptions {
     /// If non-zero, this is the pixel format to use when dynamically allocating
     /// the pixel buffer to decode into. Defaults to `PixelFormat::RGBANonPremul`.
