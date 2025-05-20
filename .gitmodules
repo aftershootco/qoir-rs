@@ -1,0 +1,3 @@
+[submodule "vendor/qoir"]
+	path = vendor/qoir
+	url = https://github.com/nigeltao/qoir
