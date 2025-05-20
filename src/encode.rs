@@ -166,7 +166,7 @@ pub fn encode_to_writer<'a>(
 /// # Examples
 ///
 /// ```no_run
-/// use qoir_rs::{encode_to_file, EncodeOptions, Image, PixelFormat};
+/// use qoir_rs::{encode, EncodeOptions, Image, PixelFormat};
 ///
 /// // Assuming `pixels`, `width`, and `height` are defined
 /// let image_data = Image {
@@ -177,7 +177,7 @@ pub fn encode_to_writer<'a>(
 ///     stride_in_bytes: (width * 4) as usize, // For RGBA
 /// };
 /// let options = EncodeOptions::default();
-/// match encode_to_file(image_data, options, "output.qoir") {
+/// match encode(image_data, options, "output.qoir") {
 ///     Ok(_) => {
 ///         println!("Image encoded and saved to output.qoir");
 ///     }
@@ -186,7 +186,7 @@ pub fn encode_to_writer<'a>(
 ///     }
 /// }
 /// ```
-pub fn encode_to_file<'a>(
+pub fn encode<'a>(
     image: Image<'_>,
     options: EncodeOptions,
     path: impl AsRef<Path>,

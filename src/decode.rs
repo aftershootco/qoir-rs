@@ -65,43 +65,6 @@ pub fn decode_from_memory<'a>(
     Ok(DecodedImage::new(decoded))
 }
 
-/// Decodes a QOIR image from a file path.
-///
-/// # Arguments
-///
-/// * `path`: A path to the QOIR image file.
-/// * `options`: `DecodeOptions` to control the decoding process.
-///
-/// # Returns
-///
-/// A `Result` containing the `DecodedImage` or an `Error` if the file cannot be read or decoding fails.
-///
-/// # Examples
-///
-/// ```no_run
-/// use qoir_rs::{decode, DecodeOptions};
-///
-/// match decode("input.qoir", DecodeOptions::default()) {
-///     Ok(decoded_image) => {
-///         println!("Image decoded: {}x{}", decoded_image.image.width, decoded_image.image.height);
-///     }
-///     Err(e) => {
-///         eprintln!("Decoding failed: {:?}", e);
-///     }
-/// }
-/// ```
-pub fn decode<'a>(
-    path: impl AsRef<Path>,
-    options: DecodeOptions,
-) -> Result<DecodedImage<'a>, Error> {
-    let path = path.as_ref();
-    let file = std::fs::File::open(path).map_err(|_| Error::FileNotFound)?;
-    let mut reader = std::io::BufReader::new(file);
-    let mut data = Vec::new();
-    reader.read_to_end(&mut data).map_err(|_| Error::IoError)?;
-    decode_from_memory(&data, options)
-}
-
 /// Decodes a QOIR image from a reader.
 ///
 /// # Arguments
@@ -138,6 +101,41 @@ pub fn decode_from_reader<'a>(
     let mut reader = std::io::BufReader::new(reader);
     reader.read_to_end(&mut data).map_err(|_| Error::IoError)?;
     decode_from_memory(&data, options)
+}
+
+
+/// Decodes a QOIR image from a file path.
+///
+/// # Arguments
+///
+/// * `path`: A path to the QOIR image file.
+/// * `options`: `DecodeOptions` to control the decoding process.
+///
+/// # Returns
+///
+/// A `Result` containing the `DecodedImage` or an `Error` if the file cannot be read or decoding fails.
+///
+/// # Examples
+///
+/// ```no_run
+/// use qoir_rs::{decode, DecodeOptions};
+///
+/// match decode("input.qoir", DecodeOptions::default()) {
+///     Ok(decoded_image) => {
+///         println!("Image decoded: {}x{}", decoded_image.image.width, decoded_image.image.height);
+///     }
+///     Err(e) => {
+///         eprintln!("Decoding failed: {:?}", e);
+///     }
+/// }
+/// ```
+pub fn decode<'a>(
+    path: impl AsRef<Path>,
+    options: DecodeOptions,
+) -> Result<DecodedImage<'a>, Error> {
+    let path = path.as_ref();
+    let file = std::fs::File::open(path).map_err(|_| Error::FileNotFound)?;
+    decode_from_reader(file, options)
 }
 
 /// Decodes basic metadata (width, height, pixel format) from QOIR image data.
@@ -195,8 +193,7 @@ impl DecodedImage<'_> {
             // NOTE: Verify this
             std::slice::from_raw_parts(
                 result.result.dst_pixbuf.data as *const u8,
-                result.result.dst_pixbuf.pixcfg.width_in_pixels as usize
-                    * result.result.dst_pixbuf.pixcfg.height_in_pixels as usize
+                    result.result.dst_pixbuf.pixcfg.height_in_pixels as usize
                     * result.result.dst_pixbuf.stride_in_bytes,
             )
         };
