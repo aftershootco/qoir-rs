@@ -3,17 +3,22 @@ use std::sync::Arc;
 use crate::bindings::{qoir_decode_result, qoir_encode_result, qoir_pixel_format, qoir_rectangle};
 
 /// Represents errors that can occur during QOIR encoding or decoding.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, thiserror::Error)]
 pub enum Error {
     /// An invalid parameter was provided to a function.
+    #[error("Invalid parameter")]
     InvalidParameter,
     /// Decoding of QOIR data failed. Contains a message from the C library.
+    #[error("Decoding failed: {0}")]
     DecodingFailed(String),
     /// Encoding to QOIR data failed. Contains a message from the C library.
+    #[error("Encoding failed: {0}")]
     EncodingFailed(String),
     /// The specified file could not be found.
+    #[error("File not found")]
     FileNotFound,
     /// An I/O error occurred during file reading or writing.
+    #[error("I/O error occurred")]
     IoError,
 }
 

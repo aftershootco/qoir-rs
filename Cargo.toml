@@ -9,6 +9,9 @@ doctest = false
 
 [dependencies]
 libc = "0.2.172"
+clap = { version = "4.4.12", features = ["derive"] }
+image = "0.24.7"
+thiserror = "2.0.12"
 
 [build-dependencies]
 bindgen = "0.71.1"
