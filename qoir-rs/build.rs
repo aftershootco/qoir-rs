@@ -10,11 +10,11 @@ fn main() {
 
     build
         .file("src/qoir.c")
-        .include("vendor/qoir/src")
+        .include("../vendor/qoir/src")
         .compile("qoir");
 
     let bindings = bindgen::Builder::default()
-        .header("vendor/qoir/src/qoir.h")
+        .header("../vendor/qoir/src/qoir.h")
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .generate()
         .expect("Unable to generate bindings");

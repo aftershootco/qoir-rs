@@ -1,0 +1,23 @@
+[package]
+name = "qoir-rs"
+version = "0.1.0"
+edition = "2024"
+build = "build.rs"
+
+[lib]
+doctest = false
+
+[dependencies]
+libc.workspace = true
+clap.workspace = true
+image.workspace = true
+thiserror.workspace = true
+
+[build-dependencies]
+bindgen.workspace = true
+cc.workspace = true
+
+[features]
+default = ["simd"]
+large_luts = []
+simd = []

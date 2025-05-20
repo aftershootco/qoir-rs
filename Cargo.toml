@@ -1,23 +1,17 @@
-[package]
+[workspace]
 name = "qoir-rs"
-version = "0.1.0"
 edition = "2024"
-build = "build.rs"
+members = [
+    "qoir-rs",
+    # "examples/basic_usage",
+]
 
-[lib]
-doctest = false
-
-[dependencies]
+[workspace.dependencies]
 libc = "0.2.172"
 clap = { version = "4.4.12", features = ["derive"] }
 image = "0.24.7"
 thiserror = "2.0.12"
-
-[build-dependencies]
 bindgen = "0.71.1"
 cc = "1.2.23"
 
-[features]
-default = ["simd"]
-large_luts = []
-simd = []
+qoir-rs = { path = "qoir-rs" }
