@@ -4,6 +4,7 @@ edition = "2024"
 members = [
     "qoir-rs",
     "examples/basic_usage",
+    "benchmark"
 ]
 
 [workspace.dependencies]

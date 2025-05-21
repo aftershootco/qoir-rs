@@ -44,7 +44,7 @@ fn main() -> Result<(), Error> {
     for y in 0..height {
         for x in 0..width {
             let offset = ((y * width + x) * 4) as usize;
-            pixel_data[offset + 0] = (x * 255 / width) as u8; // Red gradient
+            pixel_data[offset] = (x * 255 / width) as u8; // Red gradient
             pixel_data[offset + 1] = (y * 255 / height) as u8; // Green gradient
             pixel_data[offset + 2] = 128; // Blue
             pixel_data[offset + 3] = 255; // Alpha

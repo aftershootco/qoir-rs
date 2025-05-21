@@ -3,7 +3,7 @@ use std::fs::{self, File};
 use std::io::BufReader;
 use std::path::Path;
 
-const TEST_DATA_DIR: &str = "tests/data";
+const TEST_DATA_DIR: &str = "../data";
 const TEST_OUTPUT_DIR: &str = "tests/output";
 
 fn ensure_output_dir() {
